@@ -45,9 +45,9 @@ public class SwerveDriveCommand extends CommandBase {
   public void execute() {
 
     //Gets values from double suppliers
-    Double Xj = -1 * xSpeed.getAsDouble(); //WPIlib coordinate system is weird, link to docs below
+    Double Xj = -1 * xSpeed.getAsDouble(); //Inverted because WPIlib coordinate system is weird, link to docs below
     Double Yj = -1 * ySpeed.getAsDouble(); //The controller is inverted
-    Double Zj = -1 * turningSpeed.getAsDouble(); //WPIlib coordinate system is weird, link to docs below
+    Double Zj = -1 * turningSpeed.getAsDouble(); //Inverted because WPIlib coordinate system is weird, link to docs below
 
     //Check "Robot Coordinate System" https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html
     //It is the same logic as the SwerveDriveKinematics object created in Constants.java, the (positive, positive) quadrant is in the top left
