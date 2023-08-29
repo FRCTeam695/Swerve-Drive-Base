@@ -45,9 +45,12 @@ public class SwerveDriveCommand extends CommandBase {
   public void execute() {
 
     //Gets values from double suppliers
-    Double Xj = -1 * xSpeed.getAsDouble(); //All my calculations are based off values get bigger as you go counterclockwise (like the unit circle) but for some reason WPIlib goes opposite for this
+    Double Xj = -1 * xSpeed.getAsDouble(); //WPIlib coordinate system is weird, link to docs below
     Double Yj = -1 * ySpeed.getAsDouble(); //The controller is inverted
-    Double Zj = -1 * turningSpeed.getAsDouble(); //All my calculations are based off values get bigger as you go counterclockwise (like the unit circle) but for some reason WPIlib goes opposite for this
+    Double Zj = -1 * turningSpeed.getAsDouble(); //WPIlib coordinate system is weird, link to docs below
+
+    //Check "Robot Coordinate System" https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html
+    //It is the same logic as the SwerveDriveKinematics object created in Constants.java, the (positive, positive) quadrant is in the top left
 
     //Deadband
     Xj = Math.abs(Xj) > 0.15 ? Xj : 0;

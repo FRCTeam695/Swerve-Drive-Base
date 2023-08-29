@@ -137,7 +137,7 @@ public class SwerveModule{
     public void setTurnEncoder(int motor, double radians) {
         double desired_ticks = radians / Math.PI * (1024 * TURNING_GEAR_RATIO);
         turningPidController.reset();
-        setPoint = radians;  //Before this line setPoint is equal to 7
+        setPoint = radians;  //Before this line is executed setPoint is equal to 7
         turnMotor.setSelectedSensorPosition(desired_ticks);
     }
 

@@ -38,7 +38,7 @@ public class SwerveSubsystem extends SubsystemBase{
     }
 
     public double getHeading(){
-        return -1 * Math.IEEEremainder(gyro.getAngle(), 360);
+        return -1 * Math.IEEEremainder(gyro.getAngle(), 360);  //Multiply by negative one because on wpilib as you go counterclockwise angles should get bigger
     }
 
     public void setModules(SwerveModuleState[] desiredStates){
