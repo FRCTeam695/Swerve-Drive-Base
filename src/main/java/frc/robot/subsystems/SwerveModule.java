@@ -5,7 +5,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -30,7 +29,7 @@ public class SwerveModule{
     private final double wheelCircumference;
 
 
-    public SwerveModule(int driveMotorId, int turnMotorId, boolean driveMotorReversed, double absoluteEncoderOffset, int TurnCANCoderId){
+    public SwerveModule(int driveMotorId, int turnMotorId, double absoluteEncoderOffset, int TurnCANCoderId){
         this.absoluteEncoderOffset = absoluteEncoderOffset;
 
         //Current limit to the falcons
@@ -54,9 +53,6 @@ public class SwerveModule{
 
         //Absolute encoder
         absoluteEncoder = new WPI_CANCoder(TurnCANCoderId, "drivetrain");
-
-        //Sometimes drive motors can be reversed depending on which way the bevels on the wheel are pointint
-        driveMotor.setInverted(driveMotorReversed);
 
         //Creates the PID controller for turning
         turningPidController = new PIDController(0.015, 0.0, 0.0);
@@ -104,7 +100,6 @@ public class SwerveModule{
 
     //falconToRps converts falcon ticks to rotations per second of the wheel
     public double falconToRPS(double velocityCounts, double gearRatio) {
-        SmartDashboard.putNumber("Velocity Counts", velocityCounts);
         double motorRPS = velocityCounts * (10.0 / 2048.0);        
         double mechRPS = motorRPS / gearRatio * -1;  //multiply by negative 1 bcs the falcon is upside down
         return mechRPS;
@@ -149,7 +144,6 @@ public class SwerveModule{
 
     //getPosition returns the position of the wheel, similar too a SwerveModuleState
     public SwerveModulePosition getPosition() {
-        SmartDashboard.putNumber("Drive Velocity", getDriveVelocity());
         return new SwerveModulePosition(
             falconToMeters(driveMotor.getSelectedSensorPosition(), wheelCircumference, drivingGearRatio), 
             getState().angle
@@ -169,9 +163,6 @@ public class SwerveModule{
         }
 
         state = SwerveModuleState.optimize(state, getState().angle);
-        if (motor == 3){
-            SmartDashboard.putNumber("state", state.angle.getDegrees());
-        }
         
         double setpoint = state.angle.getDegrees();
         double turnMotorOutput = -1 * MathUtil.clamp(turningPidController.calculate(getState().angle.getDegrees(), setpoint), -1, 1);

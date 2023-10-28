@@ -4,10 +4,7 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.SwerveSubsystem;
 
@@ -19,9 +16,6 @@ public class SwerveDriveCommand extends CommandBase {
   private final SwerveSubsystem m_Subsystem;
   private final DoubleSupplier xSpeed, ySpeed, turningSpeed;
   private final boolean fieldOriented;
-  private final PIDController thetaController;
-  private double previousAngle; //-180 to 180
-  private double previousZj; // -1 to 1
 
 
   public SwerveDriveCommand(SwerveSubsystem subsystem, DoubleSupplier xSpeed, DoubleSupplier ySpeed, DoubleSupplier turningSpeed, boolean fieldOriented) {
@@ -30,10 +24,8 @@ public class SwerveDriveCommand extends CommandBase {
     this.ySpeed = ySpeed;
     this.turningSpeed = turningSpeed;
     this.fieldOriented = fieldOriented;
-    previousZj = turningSpeed.getAsDouble();
 
     m_Subsystem.startTickCount();
-    thetaController = new PIDController(0.5, 0, 0);
 
     addRequirements(subsystem);
   }
@@ -41,7 +33,6 @@ public class SwerveDriveCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    previousAngle = m_Subsystem.getHeading();
     m_Subsystem.setRelativeTurnEncoderValue();  //Uses the absolute encoder value to set the relative encoders
   }
 
@@ -57,18 +48,6 @@ public class SwerveDriveCommand extends CommandBase {
     Double Xj = -1 * xSpeed.getAsDouble(); //Inverted because WPIlib coordinate system is weird, link to docs below
     Double Yj = -1 * ySpeed.getAsDouble(); //The controller is inverted
     Double Zj = -1 * turningSpeed.getAsDouble(); //Inverted because WPIlib coordinate system is weird, link to docs below
-
-    //Accounts for robot drift
-    double deltaZj = previousZj - Zj;
-
-    //if((Math.abs(deltaZj) < 0.1) && (Zj < 0.01)){
-    //  Zj = MathUtil.clamp(thetaController.calculate(m_Subsystem.getHeading(), previousAngle), -1, 1);
-    //}
-
-    //Update Z and gyro values
-    previousAngle = m_Subsystem.getHeading();
-    previousZj = Zj;
-
 
     m_Subsystem.driveSwerve(Xj, Zj, Yj, fieldOriented);
   }

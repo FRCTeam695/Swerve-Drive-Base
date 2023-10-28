@@ -26,7 +26,6 @@ public class SwerveSubsystem extends SubsystemBase {
 
     // creates the odometry class
     public SwerveDriveOdometry odometry;
-    private final double maxSpeedMPS;
 
     // initialize the gyro
     private final AHRS gyro = new AHRS(SPI.Port.kMXP);
@@ -37,16 +36,15 @@ public class SwerveSubsystem extends SubsystemBase {
 
     public SwerveSubsystem() {
         // Summer Swerve Chassis
-        frontRight = new SwerveModule(Constants.Swerve.FRONT_RIGHT_DRIVE_ID, Constants.Swerve.FRONT_RIGHT_TURN_ID, Constants.Swerve.FRONT_RIGHT_DRIVE_MOTOR_REVERSED, Constants.Swerve.FRONT_RIGHT_ABS_ENCODER_OFFSET, Constants.Swerve.FRONT_RIGHT_CANCODER_ID);
-        frontLeft = new SwerveModule(Constants.Swerve.FRONT_LEFT_DRIVE_ID, Constants.Swerve.FRONT_LEFT_TURN_ID, Constants.Swerve.FRONT_LEFT_DRIVE_MOTOR_REVERSED, Constants.Swerve.FRONT_LEFT_ABS_ENCODER_OFFSET, Constants.Swerve.FRONT_LEFT_CANCODER_ID);
-        bottomLeft = new SwerveModule(Constants.Swerve.BACK_LEFT_DRIVE_ID, Constants.Swerve.BACK_LEFT_TURN_ID, Constants.Swerve.BACK_LEFT_DRIVE_MOTOR_REVERSED, Constants.Swerve.BACK_LEFT_ABS_ENCODER_OFFSET, Constants.Swerve.BACK_LEFT_CANCODER_ID);
-        bottomRight = new SwerveModule(Constants.Swerve.BACK_RIGHT_DRIVE_ID, Constants.Swerve.BACK_RIGHT_TURN_ID, Constants.Swerve.BACK_RIGHT_DRIVE_MOTOR_REVERSED, Constants.Swerve.BACK_LEFT_ABS_ENCODER_OFFSET, Constants.Swerve.BACK_LEFT_CANCODER_ID);
+        frontRight = new SwerveModule(Constants.Swerve.FRONT_RIGHT_DRIVE_ID, Constants.Swerve.FRONT_RIGHT_TURN_ID, Constants.Swerve.FRONT_RIGHT_ABS_ENCODER_OFFSET, Constants.Swerve.FRONT_RIGHT_CANCODER_ID);
+        frontLeft = new SwerveModule(Constants.Swerve.FRONT_LEFT_DRIVE_ID, Constants.Swerve.FRONT_LEFT_TURN_ID, Constants.Swerve.FRONT_LEFT_ABS_ENCODER_OFFSET, Constants.Swerve.FRONT_LEFT_CANCODER_ID);
+        bottomLeft = new SwerveModule(Constants.Swerve.BACK_LEFT_DRIVE_ID, Constants.Swerve.BACK_LEFT_TURN_ID, Constants.Swerve.BACK_LEFT_ABS_ENCODER_OFFSET, Constants.Swerve.BACK_LEFT_CANCODER_ID);
+        bottomRight = new SwerveModule(Constants.Swerve.BACK_RIGHT_DRIVE_ID, Constants.Swerve.BACK_RIGHT_TURN_ID, Constants.Swerve.BACK_RIGHT_ABS_ENCODER_OFFSET, Constants.Swerve.BACK_RIGHT_CANCODER_ID);
 
         SwerveDriveKinematics driveKinematics = Constants.Swerve.kDriveKinematics;
         odometry = new SwerveDriveOdometry(driveKinematics, new Rotation2d(),
                 new SwerveModulePosition[] { frontRight.getPosition(), frontLeft.getPosition(),
                         bottomLeft.getPosition(), bottomRight.getPosition() });
-        maxSpeedMPS = Constants.Swerve.MAX_SPEED_METERS_PER_SECONDS;
 
         tickStart = 0;
 
@@ -97,8 +95,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
     //Sets all of the swerve modules
     public void setModules(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, maxSpeedMPS);
-        SmartDashboard.putNumber("Degrees Module 1", desiredStates[0].angle.getDegrees());
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.MAX_SPEED_METERS_PER_SECONDS);
         frontRight.setDesiredState(desiredStates[0], 1);
         frontLeft.setDesiredState(desiredStates[1], 2);
         bottomLeft.setDesiredState(desiredStates[2], 3);
@@ -109,16 +106,12 @@ public class SwerveSubsystem extends SubsystemBase {
     public SwerveModulePosition getModulePosition(int motor) {
         switch (motor) {
             case 1:
-                SmartDashboard.putNumber("Module Position 1: ", getRelativeTurnEncoderValue(1));
                 return frontRight.getPosition();
             case 2:
-                SmartDashboard.putNumber("Module Position 2: ", getRelativeTurnEncoderValue(2));
                 return frontLeft.getPosition();
             case 3:
-                SmartDashboard.putNumber("Module Position 3: ", getRelativeTurnEncoderValue(3));
                 return bottomLeft.getPosition();
             case 4:
-                SmartDashboard.putNumber("Module Position 4: ", getRelativeTurnEncoderValue(4));
                 return bottomRight.getPosition();
             default:
                 return bottomLeft.getPosition();
@@ -195,7 +188,6 @@ public class SwerveSubsystem extends SubsystemBase {
         odometry.update(new Rotation2d(getHeading() * Math.PI / 180),
                 new SwerveModulePosition[] { frontRight.getPosition(), frontLeft.getPosition(),
                         bottomLeft.getPosition(), bottomRight.getPosition() });
-        SmartDashboard.putNumber("Pitch", gyro.getPitch());
         m_field.setRobotPose(getPose());
         SmartDashboard.putData("field", m_field);
 
