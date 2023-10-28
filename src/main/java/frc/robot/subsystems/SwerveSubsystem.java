@@ -13,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveSubsystem extends SubsystemBase {
@@ -21,6 +22,7 @@ public class SwerveSubsystem extends SubsystemBase {
     private final SwerveModule frontLeft;
     private final SwerveModule bottomLeft;
     private final SwerveModule bottomRight;
+    private final Field2d m_field = new Field2d();
 
     // creates the odometry class
     public SwerveDriveOdometry odometry;
@@ -31,19 +33,15 @@ public class SwerveSubsystem extends SubsystemBase {
     private double gyroAngle;
 
     public double tickStart;
+    public ChassisSpeeds latestChassisSpeeds = new ChassisSpeeds(0, 0, 0);
 
     public SwerveSubsystem() {
         // Summer Swerve Chassis
-        frontRight = new SwerveModule(13, 12, true, 171, 11);
-        frontLeft = new SwerveModule(23, 22, true, 49, 21);
-        bottomLeft = new SwerveModule(33, 32, true, 349, 31);
-        bottomRight = new SwerveModule(43, 42, false, 207, 41);
+        frontRight = new SwerveModule(Constants.Swerve.FRONT_RIGHT_DRIVE_ID, Constants.Swerve.FRONT_RIGHT_TURN_ID, Constants.Swerve.FRONT_RIGHT_DRIVE_MOTOR_REVERSED, Constants.Swerve.FRONT_RIGHT_ABS_ENCODER_OFFSET, Constants.Swerve.FRONT_RIGHT_CANCODER_ID);
+        frontLeft = new SwerveModule(Constants.Swerve.FRONT_LEFT_DRIVE_ID, Constants.Swerve.FRONT_LEFT_TURN_ID, Constants.Swerve.FRONT_LEFT_DRIVE_MOTOR_REVERSED, Constants.Swerve.FRONT_LEFT_ABS_ENCODER_OFFSET, Constants.Swerve.FRONT_LEFT_CANCODER_ID);
+        bottomLeft = new SwerveModule(Constants.Swerve.BACK_LEFT_DRIVE_ID, Constants.Swerve.BACK_LEFT_TURN_ID, Constants.Swerve.BACK_LEFT_DRIVE_MOTOR_REVERSED, Constants.Swerve.BACK_LEFT_ABS_ENCODER_OFFSET, Constants.Swerve.BACK_LEFT_CANCODER_ID);
+        bottomRight = new SwerveModule(Constants.Swerve.BACK_RIGHT_DRIVE_ID, Constants.Swerve.BACK_RIGHT_TURN_ID, Constants.Swerve.BACK_RIGHT_DRIVE_MOTOR_REVERSED, Constants.Swerve.BACK_LEFT_ABS_ENCODER_OFFSET, Constants.Swerve.BACK_LEFT_CANCODER_ID);
 
-        // Flint Swerve Chassis
-        // frontRight = new SwerveModule(13, 12, true, 158, 11);
-        // frontLeft = new SwerveModule(23, 22, true, 222, 21);
-        // bottomLeft = new SwerveModule(33, 32, true, 247, 31);
-        // bottomRight = new SwerveModule(43, 42, false, 29, 41);
         SwerveDriveKinematics driveKinematics = Constants.Swerve.kDriveKinematics;
         odometry = new SwerveDriveOdometry(driveKinematics, new Rotation2d(),
                 new SwerveModulePosition[] { frontRight.getPosition(), frontLeft.getPosition(),
@@ -63,14 +61,18 @@ public class SwerveSubsystem extends SubsystemBase {
         }).start();
     }
 
+    //Sets the gyro heading to 0
     public void zeroHeading() {
         gyro.reset();
     }
 
+    //getPitch is used for balancing the robot on the charge station
     public double getPitch() {
         return gyro.getPitch();
     }
 
+    //getHeading returns the direction the robot is facing
+    //assumes we have already reset the gyro
     public double getHeading() {
         gyroAngle = -1 * Math.IEEEremainder(gyro.getAngle(), 360);
         SmartDashboard.putNumber("Gyro Reading", gyroAngle);
@@ -78,18 +80,22 @@ public class SwerveSubsystem extends SubsystemBase {
                           // should get bigger
     }
 
+    //Outdated method for using pure odometry to make autons
     public void startTickCount() {
         tickStart = frontLeft.getDriveTicks();
     }
 
+    //Outdated method for using pure odometry to make autons
     public double getTicks() {
         return Math.abs(frontLeft.getDriveTicks() - tickStart);
     }
 
+    //Gets the pose of the robot from the odometry, used in any self driving periods
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     }
 
+    //Sets all of the swerve modules
     public void setModules(SwerveModuleState[] desiredStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, maxSpeedMPS);
         SmartDashboard.putNumber("Degrees Module 1", desiredStates[0].angle.getDegrees());
@@ -99,6 +105,7 @@ public class SwerveSubsystem extends SubsystemBase {
         bottomRight.setDesiredState(desiredStates[3], 4);
     }
 
+    //returns the position of each swerve module (check SwerveModule.java for further details)
     public SwerveModulePosition getModulePosition(int motor) {
         switch (motor) {
             case 1:
@@ -118,6 +125,7 @@ public class SwerveSubsystem extends SubsystemBase {
         }
     }
 
+    //Gets the position of the wheel as returned by the absolute encoder (check SwerveModule.java for further details)
     public double getAbsoluteEncoderValue(int motor) {
         switch (motor) {
             case 1:
@@ -133,6 +141,7 @@ public class SwerveSubsystem extends SubsystemBase {
         }
     }
 
+    //Gets the swerve module state of the motor (check SwerveModule.java for further details)
     public SwerveModuleState getState(int motor) {
         switch (motor) {
             case 1:
@@ -148,6 +157,7 @@ public class SwerveSubsystem extends SubsystemBase {
         }
     }
 
+    //Gets the relative encoder position of each swerve module (check SwerveModule.java for further details)
     public double getRelativeTurnEncoderValue(int motor) {
         switch (motor) {
             case 1:
@@ -163,6 +173,7 @@ public class SwerveSubsystem extends SubsystemBase {
         }
     }
 
+    // resets the drive motors (check SwerveModule.java for further details)
     public void resetDriveMotorEncoders(){
         frontRight.zeroDrivePosition();
         frontLeft.zeroDrivePosition();
@@ -170,26 +181,33 @@ public class SwerveSubsystem extends SubsystemBase {
         bottomRight.zeroDrivePosition();
     }
 
+    //Sets the relative encoder value using the absolute encoders (check SwerveModule.java for further details)
     public void setRelativeTurnEncoderValue() {
-        // Uses the absolute encoder value to set relative encoders
         frontRight.setTurnEncoder(frontRight.getAbsoluteEncoderRadians());
         frontLeft.setTurnEncoder(frontLeft.getAbsoluteEncoderRadians());
         bottomLeft.setTurnEncoder(bottomLeft.getAbsoluteEncoderRadians());
         bottomRight.setTurnEncoder(bottomRight.getAbsoluteEncoderRadians());
     }
 
+    //periodic updates the odometry object
     @Override
     public void periodic() {
         odometry.update(new Rotation2d(getHeading() * Math.PI / 180),
                 new SwerveModulePosition[] { frontRight.getPosition(), frontLeft.getPosition(),
                         bottomLeft.getPosition(), bottomRight.getPosition() });
         SmartDashboard.putNumber("Pitch", gyro.getPitch());
+        m_field.setRobotPose(getPose());
+        SmartDashboard.putData("field", m_field);
+
+        
     }
 
+    //Allows us to manually reset the odometer
     public void setOdometer(SwerveModulePosition[] modulePositions, Pose2d pose) {
         odometry.resetPosition(new Rotation2d(getHeading() * Math.PI / 180), modulePositions, pose);
     }
 
+    //Allows us to manually reset the odometer, used with vision pose extrapolation
     public void resetOdometry(Pose2d pose) {
         odometry.resetPosition(
                 gyro.getRotation2d(),
@@ -202,6 +220,7 @@ public class SwerveSubsystem extends SubsystemBase {
                 pose);
     }
 
+    //Stops all of the swerve modules
     public void stopModules() {
         frontRight.stop();
         frontLeft.stop();
@@ -209,6 +228,11 @@ public class SwerveSubsystem extends SubsystemBase {
         bottomRight.stop();
     }
 
+    public ChassisSpeeds getChassisSpeeds(){
+        return latestChassisSpeeds;
+    }
+
+    //Method that actually drives swerve
     public void driveSwerve(double Xj, double Zj, double Yj, boolean feildOriented) {
         // Deadband
         Xj = Math.abs(Xj) > 0.01 ? Xj : 0;
@@ -227,6 +251,8 @@ public class SwerveSubsystem extends SubsystemBase {
         } else {
             chassisSpeeds = new ChassisSpeeds(Yj, Xj, Zj);
         }
+
+        latestChassisSpeeds = chassisSpeeds;
 
         // convert chassis speeds to module states
         SwerveModuleState[] moduleStates = Constants.Swerve.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);

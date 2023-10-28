@@ -61,23 +61,9 @@ public class SwerveDriveCommand extends CommandBase {
     //Accounts for robot drift
     double deltaZj = previousZj - Zj;
 
-    if((Math.abs(deltaZj) < 0.1) && (Zj < 0.01)){
-      Zj = MathUtil.clamp(thetaController.calculate(m_Subsystem.getHeading(), previousAngle), -1, 1);
-    }
-
-    //Calculate difference between expected turn and real-time turn
-    //double diff = (previousZj - Zj) - (previousAngle - m_Subsystem.getHeading()) / 360 ;
-    //double turningOffset = MathUtil.clamp(diff, -1, 1);
-    //double zRes = Zj - turningOffset;
-
-    SmartDashboard.putNumber("X", Xj);
-    SmartDashboard.putNumber("Y", Yj);
-    SmartDashboard.putNumber("Z", Zj);
-    //SmartDashboard.putNumber("Difference", diff);
-    //SmartDashboard.putNumber("Turn offset", turningOffset);
-    //SmartDashboard.putNumber("zRes", zRes);
-    
-    SmartDashboard.putNumber("Ticks", m_Subsystem.getTicks());
+    //if((Math.abs(deltaZj) < 0.1) && (Zj < 0.01)){
+    //  Zj = MathUtil.clamp(thetaController.calculate(m_Subsystem.getHeading(), previousAngle), -1, 1);
+    //}
 
     //Update Z and gyro values
     previousAngle = m_Subsystem.getHeading();
