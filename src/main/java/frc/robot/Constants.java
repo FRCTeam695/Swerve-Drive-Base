@@ -25,7 +25,7 @@ public final class Constants {
                                                                 }};
                                                                 
         //CHOOSE WHICH ROBOT YOU'RE USING
-        public static final double[] CHOSEN_CONSTANTS = ROBOT_MAP.get("GOLDMODULE");
+        public static final double[] CHOSEN_CONSTANTS = ROBOT_MAP.get("QB");
 
         // miscellaneous constants
         public static final double MAX_SPEED_METERS_PER_SECONDS = Units.feetToMeters(CHOSEN_CONSTANTS[5]);
@@ -37,7 +37,7 @@ public final class Constants {
         public static final double PROFILED_KP_VALUE = CHOSEN_CONSTANTS[9];
         public static final double MAX_VELOCITY_RADIANS_PER_SECOND = CHOSEN_CONSTANTS[10];
         public static final double MAX_ACCELERATION_RADIANS_PER_SECOND_SQUARED = CHOSEN_CONSTANTS[13];
-        public static final double DISCRETIZE_TIMESTAMP = 0.5;
+        public static final double DISCRETIZE_TIMESTAMP = 0.02;
 
         // front right wheel
         public static final int FRONT_RIGHT_DRIVE_ID = 13;

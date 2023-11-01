@@ -190,8 +190,6 @@ public class SwerveSubsystem extends SubsystemBase {
                         bottomLeft.getPosition(), bottomRight.getPosition() });
         m_field.setRobotPose(getPose());
         SmartDashboard.putData("field", m_field);
-
-        
     }
 
     //Allows us to manually reset the odometer
@@ -220,14 +218,18 @@ public class SwerveSubsystem extends SubsystemBase {
         bottomRight.stop();
     }
 
-    //Method that actually drives swerve
+    // method that actually drives swerve
     public void driveSwerve(double Xj, double Zj, double Yj, boolean feildOriented) {
         // Deadband
         Xj = Math.abs(Xj) > 0.01 ? Xj : 0;
         Yj = Math.abs(Yj) > 0.01 ? Yj : 0;
         Zj = Math.abs(Zj) > 0.01 ? Zj : 0;
 
-        // Scale up the speeds, WPILib likes them in meters per second
+        SmartDashboard.putNumber("Zj", Zj);
+        SmartDashboard.putNumber("Xj", Xj);
+        SmartDashboard.putNumber("Yj", Yj);
+
+        // scale up the speeds, WPILib likes them in meters per second
         Xj = Xj * Constants.Swerve.MAX_SPEED_METERS_PER_SECONDS;
         Yj = Yj * Constants.Swerve.MAX_SPEED_METERS_PER_SECONDS;
         Zj = Zj * Constants.Swerve.MAX_ANGULAR_SPEED_METERS_PER_SECOND;
@@ -240,7 +242,8 @@ public class SwerveSubsystem extends SubsystemBase {
             chassisSpeeds = new ChassisSpeeds(Yj, Xj, Zj);
         }
 
-        // discretizes the chassis speeds (acccounts for robot skew)
+        // discretizes the chassis speeds (acccounts for robot skew) The timestamp should be the time 
+        // between each execute in the command is called.
         chassisSpeeds = ChassisSpeeds.discretize(chassisSpeeds, Constants.Swerve.DISCRETIZE_TIMESTAMP);
 
         latestChassisSpeeds = chassisSpeeds;
