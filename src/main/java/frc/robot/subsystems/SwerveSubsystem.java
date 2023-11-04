@@ -4,6 +4,10 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -47,6 +51,22 @@ public class SwerveSubsystem extends SubsystemBase {
                         bottomLeft.getPosition(), bottomRight.getPosition() });
 
         tickStart = 0;
+
+        // Configure the AutoBuilder last
+        AutoBuilder.configureHolonomic(
+            this::getPose, // Robot pose supplier
+            this::resetOdometry, // Method to reset odometry (will be called if your auto has a starting pose)
+            this::getLatestChassisSpeed, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            this::driveSwerve, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+                new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
+                4.5, // Max module speed, in m/s
+                0.3, // Drive base radius in meters. Distance from robot center to furthest module.
+                new ReplanningConfig() // Default path replanning config. See the API for the options here
+            ),
+        this // Reference to this subsystem to set requirements
+    );
 
         // resets the gyro, it is calibrating when this code is reached so we reset it
         // on a different thread with a delay
@@ -218,30 +238,12 @@ public class SwerveSubsystem extends SubsystemBase {
         bottomRight.stop();
     }
 
+    public ChassisSpeeds getLatestChassisSpeed(){
+        return latestChassisSpeeds;
+    }
+
     // method that actually drives swerve
-    public void driveSwerve(double Xj, double Zj, double Yj, boolean feildOriented) {
-        // Deadband
-        Xj = Math.abs(Xj) > 0.01 ? Xj : 0;
-        Yj = Math.abs(Yj) > 0.01 ? Yj : 0;
-        Zj = Math.abs(Zj) > 0.01 ? Zj : 0;
-
-        SmartDashboard.putNumber("Zj", Zj);
-        SmartDashboard.putNumber("Xj", Xj);
-        SmartDashboard.putNumber("Yj", Yj);
-
-        // scale up the speeds, WPILib likes them in meters per second
-        Xj = Xj * Constants.Swerve.MAX_SPEED_METERS_PER_SECONDS;
-        Yj = Yj * Constants.Swerve.MAX_SPEED_METERS_PER_SECONDS;
-        Zj = Zj * Constants.Swerve.MAX_ANGULAR_SPEED_METERS_PER_SECOND;
-
-        // construct chassis speeds
-        ChassisSpeeds chassisSpeeds;
-        if (feildOriented) {
-            chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(Yj, Xj, Zj, Rotation2d.fromDegrees(getHeading()));
-        } else {
-            chassisSpeeds = new ChassisSpeeds(Yj, Xj, Zj);
-        }
-
+    public void driveSwerve(ChassisSpeeds chassisSpeeds) {
         // discretizes the chassis speeds (acccounts for robot skew) The timestamp should be the time 
         // between each execute in the command is called.
         chassisSpeeds = ChassisSpeeds.discretize(chassisSpeeds, Constants.Swerve.DISCRETIZE_TIMESTAMP);

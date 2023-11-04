@@ -15,6 +15,9 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 import java.util.function.DoubleSupplier;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
+
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
  * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
@@ -60,6 +63,8 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    PathPlannerPath path = PathPlannerPath.fromPathFile("MoveBackwards");
+
+    return AutoBuilder.followPathWithEvents(path);
   }
 }

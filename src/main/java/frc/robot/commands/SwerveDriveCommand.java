@@ -4,8 +4,12 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.subsystems.SwerveSubsystem;
 
 import java.util.function.DoubleSupplier;
@@ -49,7 +53,29 @@ public class SwerveDriveCommand extends Command {
     Double Yj = -1 * ySpeed.getAsDouble(); //The controller is inverted
     Double Zj = -1 * turningSpeed.getAsDouble(); //Inverted because WPIlib coordinate system is weird, link to docs below
 
-    m_Subsystem.driveSwerve(Xj, Zj, Yj, fieldOriented);
+    // Deadband
+    Xj = Math.abs(Xj) > 0.01 ? Xj : 0;
+    Yj = Math.abs(Yj) > 0.01 ? Yj : 0;
+    Zj = Math.abs(Zj) > 0.01 ? Zj : 0;
+
+    SmartDashboard.putNumber("Zj", Zj);
+    SmartDashboard.putNumber("Xj", Xj);
+    SmartDashboard.putNumber("Yj", Yj);
+
+    // scale up the speeds, WPILib likes them in meters per second
+    Xj = Xj * Constants.Swerve.MAX_SPEED_METERS_PER_SECONDS;
+    Yj = Yj * Constants.Swerve.MAX_SPEED_METERS_PER_SECONDS;
+    Zj = Zj * Constants.Swerve.MAX_ANGULAR_SPEED_METERS_PER_SECOND;
+
+    // construct chassis speeds
+    ChassisSpeeds chassisSpeeds;
+    if (fieldOriented) {
+        chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(Yj, Xj, Zj, Rotation2d.fromDegrees(m_Subsystem.getHeading()));
+    } else {
+        chassisSpeeds = new ChassisSpeeds(Yj, Xj, Zj);
+    }
+
+    m_Subsystem.driveSwerve(chassisSpeeds);
   }
 
   // Called once the command ends or is interrupted.
